@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import lxml
@@ -21,6 +22,7 @@ class Spider(object):
             'User-Agent'               :'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36',
             'Referer'                  :'http://www.mmjpg.com'
         }
+        self.folder_path = './mmjpg'
 
     def get_total_num(self):
         """向目标网页发送请求"""
@@ -29,6 +31,17 @@ class Spider(object):
         pages = html_data.xpath("//div[@class='page']/em[@class='info']/text()")[0]
         page_num = re.search(r'.*?(\d+).*', pages).group(1)
         return page_num
+
+    def create_folder(self, title):
+        if not os.path.isdir(self.folder_path):
+            os.mkdir(self.folder_path)
+        self.folder_path = os.path.join(self.folder_path, title)
+        print(self.folder_path)
+        try:
+            os.mkdir(self.folder_path)
+        except:
+            pass
+        os.chdir(self.folder_path)
 
     def send_request_to_url(self, num):
         """向用户指定页码发送请求"""
@@ -93,6 +106,8 @@ class Spider(object):
         pic_info = self.get_titles(res)
         pic_urls_list = spider.send_to_pics_urls(pic_info)
         self.get_mm_pics(pic_urls_list)
+        self.demo_name = re.match(r'.*?\s(.*)', self.title).group(1)
+        self.create_folder(self.demo_name)
 
         list_pics = self.data_list
         for i in range(len(list_pics)):
